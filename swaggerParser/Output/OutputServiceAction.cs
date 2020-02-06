@@ -175,7 +175,7 @@ namespace swaggerParser.Output
                 url += string.Join("", tail);
                 if (otherParameters.Count > 0)
                 {
-                    url += " + \"?\" + " + string.Join("&", otherParameters.Select(op => $"\"{op.Name}=\" + {op.Name}").ToList());
+                    url += " + \"?\" + " + string.Join(" + \"&\" + ", otherParameters.Select(op => $"\"{op.Name}=\" + {op.Name}").ToList());
                 }
             }
             return url;
