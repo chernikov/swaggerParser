@@ -39,7 +39,6 @@ namespace swaggerParser.Output
                 }
                 switch (Type)
                 {
-
                     case ClassTypeEnum.Array:
                         return InnerClass.AngularType + "[]";
                     case ClassTypeEnum.Object:
@@ -118,6 +117,7 @@ namespace swaggerParser.Output
                 case var t when t.type == "boolean":
                     Type = ClassTypeEnum.Boolean;
                     break;
+
                 case var t when t.type == "array":
                     Type = ClassTypeEnum.Array;
                     if (schema.Items != null)

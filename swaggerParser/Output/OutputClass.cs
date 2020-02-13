@@ -19,10 +19,11 @@ namespace swaggerParser.Output
                 foreach (var property in schema.Properties)
                 {
                     var propertyValue = property.Value;
-                    var @ref = propertyValue.Ref;
+                    var @ref = propertyValue.Ref ?? propertyValue.AllOf?.Ref;
 
                     var innerEntity = @ref != null ?
                         list.First(p => p.ReferenceName == @ref) : factory.CreateDefinitionWithDeep(property.Value, list);
+
 
                     Properties.Add(new ClassProperty()
                     {
