@@ -30,6 +30,7 @@ namespace swaggerParser.Output
                         if (candidate.Count <= i)
                         {
                             commonPart = candidate;
+                            break;
                         }
                         if (chunk.Name != candidate[i].Name)
                         {
