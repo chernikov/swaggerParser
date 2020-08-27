@@ -1,10 +1,10 @@
-﻿using System;
+﻿using swaggerParser.Output.Enums;
+using swaggerParser.Swagger;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using swaggerParser.Output.Enums;
-using swaggerParser.Swagger;
 
 namespace swaggerParser.Output
 {
@@ -64,8 +64,9 @@ namespace swaggerParser.Output
             var sb = new StringBuilder();
 
             sb.AppendLine("import { HttpClient, HttpHeaders } from '@angular/common/http';");
-            sb.AppendLine("import { Injectable } from '@angular/core';");
+            sb.AppendLine("import { Injectable, Inject } from '@angular/core';");
             sb.AppendLine("import { Observable } from 'rxjs';");
+            sb.AppendLine("import { APP_BASE_HREF } from '@angular/common';");
             //sb.AppendLine("");
             //sb.AppendLine("import { map } from \"rxjs/operators\";");
             sb.AppendLine("");
@@ -74,7 +75,7 @@ namespace swaggerParser.Output
             sb.AppendLine("@Injectable({ providedIn: \"root\" })");
             sb.AppendLine($"export class {service.Name}Service");
             sb.AppendLine("{");
-            sb.AppendLine($"\tprivate apiUrl:string = '{service.Url}';");
+            sb.AppendLine($"\tprivate apiUrl:string = this.baseHref + '/{service.Url}';");
             sb.AppendLine("");
             sb.AppendLine("\tprivate headers = new HttpHeaders({");
             sb.AppendLine("\t\t\"content-type\": \"application/json\",");
@@ -85,7 +86,9 @@ namespace swaggerParser.Output
             sb.AppendLine("\t\theaders : this.headers");
             sb.AppendLine("\t};");
             sb.AppendLine("");
-            sb.AppendLine("\tconstructor(private http: HttpClient) {}");
+            sb.AppendLine("\tconstructor(private http: HttpClient,");
+            sb.AppendLine("\t@Inject(APP_BASE_HREF) private baseHref : string");
+            sb.AppendLine("\t) {}");
             sb.AppendLine("");
 
             foreach (var action in service.Actions)
