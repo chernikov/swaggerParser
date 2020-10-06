@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace swaggerParser.Output
+namespace swaggerParser.Output.Base
 {
-    public class OutputService
+    public class BaseService
     {
         public string Name { get; set; }
+
+        public List<BaseAction> Actions { get; set; }
 
         public List<PathChunk> UrlChunks
         {
@@ -50,11 +52,11 @@ namespace swaggerParser.Output
             }
         }
 
-        public List<OutputServiceAction> Actions { get; set; }
+      
 
-        public OutputService()
+        public BaseService()
         {
-            Actions = new List<OutputServiceAction>();
+            Actions = new List<BaseAction>();
         }
     }
 }

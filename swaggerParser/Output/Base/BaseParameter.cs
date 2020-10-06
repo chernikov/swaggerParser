@@ -1,13 +1,14 @@
-﻿using System;
+﻿using swaggerParser.Output.Base;
+using swaggerParser.Swagger;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using swaggerParser.Swagger;
 
-namespace swaggerParser.Output
+namespace swaggerParser.Output.Base
 {
-    public class OutputServiceActionParameter
+    public class BaseParameter
     {
         public string Name { get; set; }
 
@@ -15,6 +16,6 @@ namespace swaggerParser.Output
 
         public bool Required { get; set; }
 
-        public BaseOutputClass Class { get; set; }
+        public BaseType Type { get; set; }
     }
 }

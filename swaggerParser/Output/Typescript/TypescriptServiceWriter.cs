@@ -1,4 +1,7 @@
-﻿using swaggerParser.Output.Enums;
+﻿using swaggerParser.Output.Base;
+using swaggerParser.Output.Enums;
+using swaggerParser.Output.Files;
+using swaggerParser.Output.Typescript;
 using swaggerParser.Swagger;
 using System;
 using System.Collections.Generic;
@@ -8,58 +11,25 @@ using System.Threading.Tasks;
 
 namespace swaggerParser.Output
 {
-    public class ServiceFactory
+    public class TypescriptServiceWriter : IServiceWriter
     {
-        public List<OutputService> GetServices(Document document, List<BaseOutputClass> baseOutputClasses)
-        {
-            var services = new Dictionary<string, OutputService>();
-
-            foreach (var path in document.Paths)
-            {
-                var servicePath = path.Key;
-                foreach (var action in path.Value)
-                {
-                    var method = action.Key;
-                    var actionValue = action.Value;
-                    var tag = actionValue.Tags[0];
-                    if (!services.ContainsKey(tag))
-                    {
-                        var newService = new OutputService()
-                        {
-                            Name = tag
-                        };
-                        services.Add(tag, newService);
-                    }
-                    var service = services[tag];
-                    var outputAction = new OutputServiceAction()
-                    {
-                        Method = OutputServiceAction.ParseMethodType(method),
-                        Path = servicePath,
-                        RequestBody = OutputServiceAction.ParseRequestBody(actionValue.RequestBody, baseOutputClasses),
-                        Responses = OutputServiceAction.ParseResponses(actionValue.Responses, baseOutputClasses),
-                        Parameters = OutputServiceAction.ParseParameters(actionValue.Parameters, baseOutputClasses)
-                    };
-                    service.Actions.Add(outputAction);
-                }
-            }
-            return services.Values.ToList();
-        }
-
-        public List<ServiceFile> GenerateFiles(List<OutputService> services)
+       
+        public List<ServiceFile> GenerateFiles(List<BaseService> services)
         {
             var list = new List<ServiceFile>();
             foreach (var service in services)
             {
+                var typescriptService = new TypescriptService(service);
                 list.Add(new ServiceFile()
                 {
                     FileName = $"{service.Name.GetKebabName()}.service.ts",
-                    Content = GenerateContent(service)
+                    Content = GenerateContent(typescriptService)
                 });
             }
             return list;
         }
 
-        private string GenerateContent(OutputService service)
+        private string GenerateContent(TypescriptService service)
         {
             var sb = new StringBuilder();
 
@@ -93,6 +63,7 @@ namespace swaggerParser.Output
 
             foreach (var action in service.Actions)
             {
+
                 var methodName = GetMethodName(service.Actions, action);
 
                 sb.AppendLine($"\t{methodName}({action.AngularInputParameters}) : Observable<{action.AngularOutputParameter}> {{");
@@ -105,7 +76,7 @@ namespace swaggerParser.Output
             return sb.ToString();
         }
 
-        private string GetMethodName(List<OutputServiceAction> list, OutputServiceAction current)
+        private string GetMethodName(List<TypescriptAction> list, TypescriptAction current)
         {
             var count = list.Count(p => p.Method == current.Method);
             if (count == 1)
@@ -128,7 +99,7 @@ namespace swaggerParser.Output
             return current.AngularMethod;
         }
 
-        private string GetAngularAllReferenceTypes(OutputService service)
+        private string GetAngularAllReferenceTypes(BaseService service)
         {
             var referenceTypes = CollectAllReferenceTypes(service);
             var sb = new StringBuilder();
@@ -139,26 +110,28 @@ namespace swaggerParser.Output
             }
             foreach (var referenceType in referenceTypes)
             {
-                if (referenceType is OutputClass)
+                if (referenceType is BaseClass)
                 {
-                    sb.AppendLine($"import {{ {referenceType.AngularName} }} from '../classes/{referenceType.AngularName.GetKebabName()}.class';");
+                    var reference = new TypescriptClass(referenceType as BaseClass);
+                    sb.AppendLine($"import {{ {reference.AngularName} }} from '../classes/{reference.AngularName.GetKebabName()}.class';");
                 }
-                if (referenceType is OutputEnum)
+                if (referenceType is BaseEnum)
                 {
-                    sb.AppendLine($"import {{ {referenceType.AngularName} }} from '../enums/{referenceType.AngularName.GetKebabName()}.enum';");
+                    var reference = new TypescriptEnum(referenceType as BaseEnum);
+                    sb.AppendLine($"import {{ {reference.AngularName} }} from '../enums/{reference.AngularName.GetKebabName()}.enum';");
                 }
             }
             return sb.ToString();
         }
 
-        private List<BaseOutputClass> CollectAllReferenceTypes(OutputService service)
+        private List<BaseType> CollectAllReferenceTypes(BaseService service)
         {
-            var referenceTypes = new List<BaseOutputClass>();
+            var referenceTypes = new List<BaseType>();
             foreach (var action in service.Actions)
             {
                 foreach (var parameter in action.Parameters)
                 {
-                    var @class = GetReferenceClass(parameter.Class);
+                    var @class = GetReferenceType(parameter.Type);
                     if (@class != null)
                     {
                         if (!referenceTypes.Any(p => p.Name == @class.Name))
@@ -170,7 +143,7 @@ namespace swaggerParser.Output
 
                 if (action.RequestBody != null)
                 {
-                    var @class = GetReferenceClass(action.RequestBody);
+                    var @class = GetReferenceType(action.RequestBody);
                     if (@class != null)
                     {
                         if (!referenceTypes.Any(p => p.Name == @class.Name))
@@ -182,7 +155,7 @@ namespace swaggerParser.Output
 
                 foreach (var response in action.Responses)
                 {
-                    var @class = GetReferenceClass(response.Class);
+                    var @class = GetReferenceType(response.Type);
                     if (@class != null)
                     {
                         if (!referenceTypes.Any(p => p.Name == @class.Name))
@@ -196,7 +169,7 @@ namespace swaggerParser.Output
             return referenceTypes;
         }
 
-        public BaseOutputClass GetReferenceClass(BaseOutputClass input)
+        public BaseType GetReferenceType(BaseType input)
         {
             if (input.Name != null)
             {

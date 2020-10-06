@@ -1,6 +1,6 @@
-﻿namespace swaggerParser.Output
+﻿namespace swaggerParser.Output.Files
 {
-    public class BaseFile
+    public abstract class BaseFile
     {
         public string FileName { get; set; }
 

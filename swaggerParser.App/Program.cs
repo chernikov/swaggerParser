@@ -1,6 +1,7 @@
-﻿using System.IO;
+﻿using swaggerParser;
+using swaggerParser.Generators;
+using System.IO;
 using System.Text;
-using swaggerParser;
 
 namespace swaggerParserApp
 {
@@ -13,11 +14,8 @@ namespace swaggerParserApp
             using var streamReader = new StreamReader(fileStream, Encoding.UTF8);
             text = streamReader.ReadToEnd();
 
-
-            var generator = new Generator(text);
-
+            IGenerator generator = new Generator(text);
             generator.Parse();
-
             generator.WriteFiles();
         }
     }

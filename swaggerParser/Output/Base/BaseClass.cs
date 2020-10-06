@@ -1,48 +1,62 @@
-﻿using swaggerParser.Swagger;
+﻿using swaggerParser.Output.Enums;
+using swaggerParser.Swagger;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace swaggerParser.Output
+namespace swaggerParser.Output.Base
 {
     [DebuggerDisplay("Class: {FullName}")]
-    public class OutputClass : BaseOutputClass
+    public class BaseClass : BaseType
     {
+        public BaseClass() { }
 
-        public List<ClassProperty> Properties { get; set; }
+        public BaseClass(BaseType @base)
+        {
+            Name = @base.Name;
+            IsDictionary = @base.IsDictionary;
+            InnerClass = @base.InnerClass;
+            Type = @base.Type;
+        }
 
-        public void SetProperties(ClassFactory factory, List<BaseOutputClass> list, DocumentSchema schema)
+        public BaseClass(BaseClass @base) : this(@base as BaseType)
+        {
+            Properties = @base.Properties;
+        }
+
+        public List<BaseProperty> Properties { get; set; }
+
+        public void SetProperties(ITypeParser parser, List<BaseType> list, DocumentSchema schema)
         {
             if (schema.Properties != null && schema.Properties.Count > 0)
             {
-                Properties = new List<ClassProperty>();
+                Properties = new List<BaseProperty>();
                 foreach (var property in schema.Properties)
                 {
                     var propertyValue = property.Value;
                     var @ref = propertyValue.Ref ?? propertyValue.AllOf?.Ref;
 
                     var innerEntity = @ref != null ?
-                        list.First(p => p.ReferenceName == @ref) : factory.CreateDefinitionWithDeep(property.Value, list);
+                        list.First(p => p.ReferenceName == @ref) : parser.CreateDefinitionWithDeep(property.Value, list);
 
 
-                    Properties.Add(new ClassProperty()
+                    Properties.Add(new BaseProperty()
                     {
                         IsNullable = !schema.Required.Contains(property.Key),
                         Name = property.Key,
-                        Class = innerEntity
+                        Type = innerEntity
                     });
                 }
             }
         }
 
-        internal void SetInnerClass(ClassFactory factory, List<BaseOutputClass> list, DocumentSchema schema)
+        internal void SetInnerClass(ITypeParser parser, List<BaseType> list, DocumentSchema schema)
         {
-
             if (IsDictionary)
             {
                 var @ref = schema.AdditionalProperties.Ref;
                 var innerEntity = @ref != null ?
-                       list.First(p => p.ReferenceName == @ref) : factory.CreateDefinitionWithDeep(schema.AdditionalProperties, list);
+                       list.First(p => p.ReferenceName == @ref) : parser.CreateDefinitionWithDeep(schema.AdditionalProperties, list);
                 InnerClass = innerEntity;
                 return;
             }
@@ -59,7 +73,7 @@ namespace swaggerParser.Output
                 }
 
                 var innerEntity = @ref != null ?
-                       list.First(p => p.ReferenceName == @ref) : factory.CreateDefinitionWithDeep(schema.Items, list);
+                       list.First(p => p.ReferenceName == @ref) : parser.CreateDefinitionWithDeep(schema.Items, list);
                 InnerClass = innerEntity;
             }
         }
@@ -92,19 +106,6 @@ namespace swaggerParser.Output
                         return "Long";
                     case ClassTypeEnum.String:
                         return "String";
-                }
-                return Name;
-            }
-        }
-
-        public string AngularName
-        {
-            get
-            {
-                if (Name != null && Name.IndexOf("Dto") != -1)
-                {
-                    var nameProp = Name.Replace("Dto", "");
-                    return nameProp;
                 }
                 return Name;
             }

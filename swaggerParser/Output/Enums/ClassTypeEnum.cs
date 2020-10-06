@@ -1,4 +1,4 @@
-﻿namespace swaggerParser.Output
+﻿namespace swaggerParser.Output.Enums
 {
     public enum ClassTypeEnum
     {

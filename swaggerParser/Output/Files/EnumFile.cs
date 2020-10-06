@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace swaggerParser.Output
+namespace swaggerParser.Output.Files
 {
-    public class ClassFile : BaseFile
+    public class EnumFile : BaseFile
     {
 
     }

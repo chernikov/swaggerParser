@@ -4,10 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace swaggerParser.Output
+namespace swaggerParser.Generators
 {
-    public class EnumFile : BaseFile
+    public interface IGenerator
     {
+        void Parse();
+
+
+        void WriteFiles();
 
     }
 }

@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace swaggerParser.Output
+namespace swaggerParser.Output.Base
 {
-    public class OutputResponse
+    public class BaseResponse
     {
         public int Code { get; set; }
 
-        public BaseOutputClass Class { get; set; }
+        public BaseType Type { get; set; }
+
     }
 }
