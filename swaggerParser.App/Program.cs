@@ -1,5 +1,7 @@
 ﻿using swaggerParser;
 using swaggerParser.Generators;
+using swaggerParser.Output;
+using swaggerParser.Output.Typescript;
 using System.IO;
 using System.Text;
 
@@ -14,7 +16,9 @@ namespace swaggerParserApp
             using var streamReader = new StreamReader(fileStream, Encoding.UTF8);
             text = streamReader.ReadToEnd();
 
-            IGenerator generator = new Generator(text);
+            ITypeWriter typeWriter = new TypescriptTypeWriter();
+            IServiceWriter serviceWriter = new TypescriptServiceWriter();
+            IGenerator generator = new Generator(text, typeWriter, serviceWriter);
             generator.Parse();
             generator.WriteFiles();
         }

@@ -1,4 +1,5 @@
 ﻿using swaggerParser.Output.Enums;
+using swaggerParser.Output.Parsers;
 using swaggerParser.Output.Typescript;
 using swaggerParser.Swagger;
 

@@ -1,4 +1,5 @@
 ﻿using swaggerParser.Output.Enums;
+using swaggerParser.Output.Parsers;
 using swaggerParser.Swagger;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,21 +10,6 @@ namespace swaggerParser.Output.Base
     [DebuggerDisplay("Class: {FullName}")]
     public class BaseClass : BaseType
     {
-        public BaseClass() { }
-
-        public BaseClass(BaseType @base)
-        {
-            Name = @base.Name;
-            IsDictionary = @base.IsDictionary;
-            InnerClass = @base.InnerClass;
-            Type = @base.Type;
-        }
-
-        public BaseClass(BaseClass @base) : this(@base as BaseType)
-        {
-            Properties = @base.Properties;
-        }
-
         public List<BaseProperty> Properties { get; set; }
 
         public void SetProperties(ITypeParser parser, List<BaseType> list, DocumentSchema schema)

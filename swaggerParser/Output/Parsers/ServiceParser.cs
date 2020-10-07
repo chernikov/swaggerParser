@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace swaggerParser.Output
+namespace swaggerParser.Output.Parsers
 {
     public class ServiceParser : IServiceParser
     {
@@ -43,7 +43,7 @@ namespace swaggerParser.Output
                         Path = servicePath,
                         RequestBody = ParseRequestBody( actionValue.RequestBody, baseOutputClasses),
                         Responses = ParseResponses(actionValue.Responses, baseOutputClasses),
-                        Parameters = ParseParameters( actionValue.Parameters, baseOutputClasses)
+                        Parameters = ParseParameters(actionValue.Parameters, baseOutputClasses)
                     };
                     service.Actions.Add(outputAction);
                 }

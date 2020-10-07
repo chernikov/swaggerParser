@@ -20,20 +20,18 @@ namespace swaggerParser.Output.Typescript
             {
                 if (_type is BaseEnum)
                 {
-                    var typescriptEnum = new TypescriptEnum(_type as BaseEnum);
                     list.Add(new EnumFile()
                     {
-                        FileName = $"{typescriptEnum.Name.GetKebabName()}.enum.ts",
-                        Content = GenerateContentEnum(typescriptEnum)
+                        FileName = $"{_type.GetKebabName()}.enum.ts",
+                        Content = GenerateContentEnum(_type as BaseEnum)
                     });
                 }
                 if (_type is BaseClass)
                 {
-                    var @class = new TypescriptClass(_type as BaseClass); 
                     list.Add(new ClassFile()
                     {
-                        FileName = $"{@class.AngularName.GetKebabName()}.class.ts",
-                        Content = GenerateContentClass(@class)
+                        FileName = $"{_type.GetKebabName()}.class.ts",
+                        Content = GenerateContentClass(_type as BaseClass)
                     });
                 }
             }
@@ -42,7 +40,7 @@ namespace swaggerParser.Output.Typescript
 
       
 
-        private string GenerateContentEnum(TypescriptEnum @enum)
+        private string GenerateContentEnum(BaseEnum @enum)
         {
             var sb = new StringBuilder();
 
@@ -71,15 +69,15 @@ namespace swaggerParser.Output.Typescript
             return sb.ToString();
         }
 
-        private string GenerateContentClass(TypescriptClass @class)
+        private string GenerateContentClass(BaseClass @class)
         {
             var sb = new StringBuilder();
             sb.AppendLine(GetAllReferenceTypes(@class));
-            sb.AppendLine($"export class {@class.AngularName} {{");
+            sb.AppendLine($"export class {@class.GetTypescriptName()} {{");
             foreach (var type in @class.Properties)
             {
-                var innerClass = new TypescriptClass(new BaseClass(type.Type));
-                sb.AppendLine($"\t{type.Name} : {innerClass.AngularType};");
+                
+                sb.AppendLine($"\t{type.Name} : {type.Type.GetTypescriptType() };");
             }
             sb.AppendLine($"");
 
@@ -90,14 +88,14 @@ namespace swaggerParser.Output.Typescript
             return sb.ToString();
         }
 
-        private string GenerateConstructor(TypescriptClass @class)
+        private string GenerateConstructor(BaseClass @class)
         {
             var sb = new StringBuilder();
             sb.AppendLine("\tconstructor() {");
             foreach (var type in @class.Properties)
             {
-                var innerClass = new TypescriptClass(new BaseClass(type.Type));
-                sb.AppendLine($"\t\tthis.{type.Name} = {innerClass.DefaultValue};");
+                
+                sb.AppendLine($"\t\tthis.{type.Name} = {type.Type.GetDefaultValue()};");
             }
             sb.AppendLine("\t}");
             return sb.ToString();
@@ -105,7 +103,7 @@ namespace swaggerParser.Output.Typescript
 
 
 
-        private string GetAllReferenceTypes(TypescriptClass @class)
+        private string GetAllReferenceTypes(BaseClass @class)
         {
             var referenceTypes = CollectAllReferenceTypes(@class);
             var sb = new StringBuilder();
@@ -114,13 +112,11 @@ namespace swaggerParser.Output.Typescript
             {
                 if (referenceType is BaseClass)
                 {
-                    var reference = new TypescriptClass(referenceType as BaseClass);
-                    sb.AppendLine($"import {{ {reference.AngularName} }} from './{reference.AngularName.GetKebabName()}.class';");
+                    sb.AppendLine($"import {{ {referenceType.GetTypescriptName()} }} from './{referenceType.GetKebabName()}.class';");
                 }
                 if (referenceType is BaseEnum)
                 {
-                    var reference = new TypescriptEnum(referenceType as BaseEnum);
-                    sb.AppendLine($"import {{ {reference.AngularName} }} from '../enums/{reference.AngularName.GetKebabName()}.enum';");
+                    sb.AppendLine($"import {{ {referenceType.GetTypescriptName()} }} from '../enums/{referenceType.GetKebabName()}.enum';");
                 }
             }
             if (referenceTypes.Count > 0)
@@ -130,7 +126,7 @@ namespace swaggerParser.Output.Typescript
             return sb.ToString();
         }
 
-        private List<BaseType> CollectAllReferenceTypes(TypescriptClass @class)
+        private List<BaseType> CollectAllReferenceTypes(BaseClass @class)
         {
             var referenceTypes = new List<BaseType>();
             foreach (var property in @class.Properties)

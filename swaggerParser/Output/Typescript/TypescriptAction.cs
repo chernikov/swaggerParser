@@ -19,7 +19,7 @@ namespace swaggerParser.Output.Typescript
             Responses = @base.Responses;
         }
 
-        public string AngularMethod
+        public string TypescriptMethod
         {
             get
             {
@@ -27,29 +27,28 @@ namespace swaggerParser.Output.Typescript
             }
         }
 
-        public string AngularInputParameters
+        public string TypescriptInputParameters
         {
             get
             {
                 if (RequestBody == null)
                 {
-                    return string.Join(",", Parameters.Select(p => $"{p.Name}: {new TypescriptClass(new BaseClass(p.Type)).AngularType}"));
+                    return string.Join(",", Parameters.Select(p => $"{p.Name}: {p.Type.GetTypescriptType()}"));
                 }
-                var requestParams = Parameters.Select(p => $"{p.Name}: {new TypescriptClass(new BaseClass(p.Type)).AngularType}").ToList();
-                var typescriptType = new TypescriptClass(new BaseClass(RequestBody));
-                requestParams.Add($"body : {typescriptType.AngularType}");
+                var requestParams = Parameters.Select(p => $"{p.Name}: {p.Type.GetTypescriptType()}").ToList();
+                requestParams.Add($"body : {RequestBody.GetTypescriptType()}");
                 return string.Join(",", requestParams);
             }
         }
 
-        public string AngularOutputParameter
+        public string TypescriptOutputParameter
         {
             get
             {
                 var response200 = Responses.FirstOrDefault(p => p.Code >= 200 && p.Code < 300);
                 if (response200 != null)
                 {
-                    return new TypescriptClass(new BaseClass(response200.Type)).AngularType;
+                    return response200.Type.GetTypescriptType();
                 }
                 return "null";
             }

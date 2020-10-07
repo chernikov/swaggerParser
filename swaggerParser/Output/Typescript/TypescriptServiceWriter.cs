@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace swaggerParser.Output
+namespace swaggerParser.Output.Typescript
 {
     public class TypescriptServiceWriter : IServiceWriter
     {
@@ -22,9 +22,10 @@ namespace swaggerParser.Output
                 var typescriptService = new TypescriptService(service);
                 list.Add(new ServiceFile()
                 {
-                    FileName = $"{service.Name.GetKebabName()}.service.ts",
+                    FileName = $"{service.GetKebabName()}.service.ts",
                     Content = GenerateContent(typescriptService)
                 });
+
             }
             return list;
         }
@@ -40,7 +41,7 @@ namespace swaggerParser.Output
             //sb.AppendLine("");
             //sb.AppendLine("import { map } from \"rxjs/operators\";");
             sb.AppendLine("");
-            sb.AppendLine(GetAngularAllReferenceTypes(service));
+            sb.AppendLine(GetTypescriptAllReferenceTypes(service));
             sb.AppendLine("");
             sb.AppendLine("@Injectable({ providedIn: \"root\" })");
             sb.AppendLine($"export class {service.Name}Service");
@@ -63,11 +64,11 @@ namespace swaggerParser.Output
 
             foreach (var action in service.Actions)
             {
-
                 var methodName = GetMethodName(service.Actions, action);
 
-                sb.AppendLine($"\t{methodName}({action.AngularInputParameters}) : Observable<{action.AngularOutputParameter}> {{");
-                sb.AppendLine($"\t\treturn this.http.{action.AngularMethod}<{action.AngularOutputParameter}>({action.AngularCollectUri(service.UrlChunks)}{action.AngularRequestBody}, this.options).pipe();");
+                var typescriptAction = action as TypescriptAction;
+                sb.AppendLine($"\t{methodName}({typescriptAction.TypescriptInputParameters}) : Observable<{typescriptAction.TypescriptOutputParameter}> {{");
+                sb.AppendLine($"\t\treturn this.http.{typescriptAction.TypescriptMethod}<{typescriptAction.TypescriptOutputParameter}>({typescriptAction.AngularCollectUri(service.UrlChunks)}{typescriptAction.AngularRequestBody}, this.options).pipe();");
                 sb.AppendLine("\t}");
                 sb.AppendLine("");
             }
@@ -76,12 +77,13 @@ namespace swaggerParser.Output
             return sb.ToString();
         }
 
-        private string GetMethodName(List<TypescriptAction> list, TypescriptAction current)
+        private string GetMethodName(IEnumerable<BaseAction> list, BaseAction current)
         {
+            var currentTypescriptAction = current as TypescriptAction;
             var count = list.Count(p => p.Method == current.Method);
             if (count == 1)
             {
-                return current.AngularMethod;
+                return currentTypescriptAction.TypescriptMethod;
             }
             if (count == 2 && current.Method == MethodTypeEnum.Get)
             {
@@ -96,10 +98,10 @@ namespace swaggerParser.Output
                     return "get";
                 }
             }
-            return current.AngularMethod;
+            return currentTypescriptAction.TypescriptMethod;
         }
 
-        private string GetAngularAllReferenceTypes(BaseService service)
+        private string GetTypescriptAllReferenceTypes(BaseService service)
         {
             var referenceTypes = CollectAllReferenceTypes(service);
             var sb = new StringBuilder();
@@ -112,13 +114,11 @@ namespace swaggerParser.Output
             {
                 if (referenceType is BaseClass)
                 {
-                    var reference = new TypescriptClass(referenceType as BaseClass);
-                    sb.AppendLine($"import {{ {reference.AngularName} }} from '../classes/{reference.AngularName.GetKebabName()}.class';");
+                    sb.AppendLine($"import {{ {referenceType.GetTypescriptName()} }} from '../classes/{referenceType.GetKebabName()}.class';");
                 }
                 if (referenceType is BaseEnum)
                 {
-                    var reference = new TypescriptEnum(referenceType as BaseEnum);
-                    sb.AppendLine($"import {{ {reference.AngularName} }} from '../enums/{reference.AngularName.GetKebabName()}.enum';");
+                    sb.AppendLine($"import {{ {referenceType.GetTypescriptName()} }} from '../enums/{referenceType.GetKebabName()}.enum';");
                 }
             }
             return sb.ToString();

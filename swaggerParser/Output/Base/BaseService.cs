@@ -10,16 +10,16 @@ namespace swaggerParser.Output.Base
     {
         public string Name { get; set; }
 
-        public List<BaseAction> Actions { get; set; }
+        public IList<BaseAction> Actions { get; set; }
 
         public List<PathChunk> UrlChunks
         {
             get
             {
                 var commonPart = new List<PathChunk>();
-                if (Actions.Count > 0)
+                if (Actions.Any())
                 {
-                    var action = Actions[0];
+                    var action = Actions.First();
                     commonPart = action.PathChunks.Where(p => !p.IsParameter).ToList();
                 }
                 foreach (var action in Actions)
@@ -53,6 +53,11 @@ namespace swaggerParser.Output.Base
         }
 
       
+        public void AddAction (BaseAction action)
+        {
+            (Actions as List<BaseAction>).Add(action);
+        }
+
 
         public BaseService()
         {
