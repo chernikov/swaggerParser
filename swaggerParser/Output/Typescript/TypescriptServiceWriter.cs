@@ -20,11 +20,14 @@ namespace swaggerParser.Output.Typescript
             foreach (var service in services)
             {
                 var typescriptService = new TypescriptService(service);
-                list.Add(new ServiceFile()
+                var file = new ServiceFile()
                 {
                     FileName = $"{service.GetKebabName()}.service.ts",
                     Content = GenerateContent(typescriptService)
-                });
+                };
+
+                list.Add(file);
+                Console.WriteLine($"Generate service: {file.FileName}");
 
             }
             return list;

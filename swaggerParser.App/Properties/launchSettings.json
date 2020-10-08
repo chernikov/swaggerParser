@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "swaggerParser.App": {
+      "commandName": "Project",
+      "commandLineArgs": "dart"
+    }
+  }
+}

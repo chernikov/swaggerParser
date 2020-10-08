@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>preview</LangVersion>
+    <Configurations>Debug;Release;Dart Debug</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

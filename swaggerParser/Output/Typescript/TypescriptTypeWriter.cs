@@ -18,23 +18,30 @@ namespace swaggerParser.Output.Typescript
             var list = new List<BaseFile>();
             foreach (var _type in types)
             {
+                BaseFile file = null; 
                 if (_type is BaseEnum)
                 {
-                    list.Add(new EnumFile()
+                    file = new EnumFile()
                     {
                         FileName = $"{_type.GetKebabName()}.enum.ts",
                         Content = GenerateContentEnum(_type as BaseEnum)
-                    });
+                    };
                 }
                 if (_type is BaseClass)
                 {
-                    list.Add(new ClassFile()
+                    file = new ClassFile()
                     {
                         FileName = $"{_type.GetKebabName()}.class.ts",
                         Content = GenerateContentClass(_type as BaseClass)
-                    });
+                    };
+                }
+                if (file != null)
+                {
+                    Console.WriteLine($"Generate file: {file.FileName}");
+                    list.Add(file);
                 }
             }
+
             return list;
         }
 

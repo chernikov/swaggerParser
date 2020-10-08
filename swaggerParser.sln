@@ -11,18 +11,25 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "swaggerParser.Tests", "swag
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Dart Debug|Any CPU = Dart Debug|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{642069EF-2ED7-4B6F-93F6-DC2936715AD2}.Dart Debug|Any CPU.ActiveCfg = Dart Debug|Any CPU
+		{642069EF-2ED7-4B6F-93F6-DC2936715AD2}.Dart Debug|Any CPU.Build.0 = Dart Debug|Any CPU
 		{642069EF-2ED7-4B6F-93F6-DC2936715AD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{642069EF-2ED7-4B6F-93F6-DC2936715AD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{642069EF-2ED7-4B6F-93F6-DC2936715AD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{642069EF-2ED7-4B6F-93F6-DC2936715AD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADED804A-7B4E-4C30-BE53-9D0730813F0D}.Dart Debug|Any CPU.ActiveCfg = Dart Debug|Any CPU
+		{ADED804A-7B4E-4C30-BE53-9D0730813F0D}.Dart Debug|Any CPU.Build.0 = Dart Debug|Any CPU
 		{ADED804A-7B4E-4C30-BE53-9D0730813F0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ADED804A-7B4E-4C30-BE53-9D0730813F0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADED804A-7B4E-4C30-BE53-9D0730813F0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADED804A-7B4E-4C30-BE53-9D0730813F0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C413944-3F5A-4754-BD3C-18B10B130995}.Dart Debug|Any CPU.ActiveCfg = Dart Debug|Any CPU
+		{8C413944-3F5A-4754-BD3C-18B10B130995}.Dart Debug|Any CPU.Build.0 = Dart Debug|Any CPU
 		{8C413944-3F5A-4754-BD3C-18B10B130995}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8C413944-3F5A-4754-BD3C-18B10B130995}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C413944-3F5A-4754-BD3C-18B10B130995}.Release|Any CPU.ActiveCfg = Release|Any CPU
