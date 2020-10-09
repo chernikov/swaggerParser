@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Folder Include="Output\BaseService\" />
-    <Folder Include="Output\Dart\" />
   </ItemGroup>
 
 </Project>

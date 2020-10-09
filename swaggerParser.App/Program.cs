@@ -31,7 +31,7 @@ namespace swaggerParserApp
                     break;
                 case "dart":
                     typeWriter = new DartTypeWriter();
-                    serviceWriter = new TypescriptServiceWriter();
+                    serviceWriter = new DartServiceWriter();
                     break;
             }
             IGenerator generator = new Generator(text, typeWriter, serviceWriter);

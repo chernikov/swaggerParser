@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace swaggerParser.Output.Typescript
+namespace swaggerParser.Output.Dart
 {
-    public class TypescriptAction : BaseAction
+    public class DartAction : BaseAction
     {
 
-        public TypescriptAction(BaseAction @base)
+        public DartAction(BaseAction @base)
         {
             Path = @base.Path;
             Method = @base.Method;
@@ -19,7 +19,7 @@ namespace swaggerParser.Output.Typescript
             Responses = @base.Responses;
         }
 
-        public string TypescriptMethod
+        public string DartMethod
         {
             get
             {
@@ -27,40 +27,40 @@ namespace swaggerParser.Output.Typescript
             }
         }
 
-        public string TypescriptInputParameters
+        public string DartInputParameters
         {
             get
             {
                 if (RequestBody == null)
                 {
-                    return string.Join(",", Parameters.Select(p => $"{p.Name}: {p.Type.GetTypescriptType()}"));
+                    return string.Join(",", Parameters.Select(p => $"{p.Type.GetDartType()} {p.Name.AvoidKeywords()}"));
                 }
-                var requestParams = Parameters.Select(p => $"{p.Name}: {p.Type.GetTypescriptType()}").ToList();
-                requestParams.Add($"body : {RequestBody.GetTypescriptType()}");
+                var requestParams = Parameters.Select(p => $"{p.Type.GetDartType()} {p.Name.AvoidKeywords()}").ToList();
+                requestParams.Add($"{RequestBody.GetDartType()} data");
                 return string.Join(",", requestParams);
             }
         }
 
-        public string TypescriptOutputParameter
+        public BaseType DartOutputParameterType
         {
             get
             {
                 var response200 = Responses.FirstOrDefault(p => p.Code >= 200 && p.Code < 300);
                 if (response200 != null)
                 {
-                    return response200.Type.GetTypescriptType();
+                    return response200.Type;
                 }
-                return "null";
+                return null;
             }
         }
 
-        public string AngularRequestBody
+        public string DartRequestBody
         {
             get
             {
                 if (RequestBody != null)
                 {
-                    return ", body";
+                    return ", data";
                 }
                 return "";
             }
@@ -69,7 +69,7 @@ namespace swaggerParser.Output.Typescript
 
         public string CollectUri(List<PathChunk> urlChunks)
         {
-            var url = "this.apiUrl";
+            var url = "_apiUrl";
 
             var actionChunks = PathChunks;
 
@@ -82,7 +82,7 @@ namespace swaggerParser.Output.Typescript
                 {
                     if (chunk.IsParameter)
                     {
-                        tail.Add($" + \"/\" + {chunk.Name}");
+                        tail.Add($" + '/' + {chunk.Name.AvoidKeywords()}.toString()");
                         var parameterForRemove = otherParameters.FirstOrDefault(p => p.Name == chunk.Name);
                         if (parameterForRemove != null)
                         {
@@ -91,18 +91,16 @@ namespace swaggerParser.Output.Typescript
                     }
                     else
                     {
-                        tail.Add($" + \"/{chunk.Name}\"");
+                        tail.Add($" + '/{chunk.Name}'");
                     }
                 }
                 url += string.Join("", tail);
                 if (otherParameters.Count > 0)
                 {
-                    url += " + \"?\" + " + string.Join(" + \"&\" + ", otherParameters.Select(op => $"\"{op.Name}=\" + {op.Name}").ToList());
+                    url += " + '?' + " + string.Join(" + '&' + ", otherParameters.Select(op => $"'{op.Name}=' + {op.Name.AvoidKeywords()}.toString()").ToList());
                 }
             }
             return url;
         }
-
-
     }
 }

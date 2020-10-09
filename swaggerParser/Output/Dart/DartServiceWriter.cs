@@ -1,29 +1,26 @@
 ﻿using swaggerParser.Output.Base;
 using swaggerParser.Output.Enums;
 using swaggerParser.Output.Files;
-using swaggerParser.Output.Typescript;
-using swaggerParser.Swagger;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace swaggerParser.Output.Typescript
+namespace swaggerParser.Output.Dart
 {
-    public class TypescriptServiceWriter : IServiceWriter
+    public class DartServiceWriter : IServiceWriter
     {
-       
         public List<ServiceFile> GenerateFiles(List<BaseService> services)
         {
             var list = new List<ServiceFile>();
             foreach (var service in services)
             {
-                var typescriptService = new TypescriptService(service);
+                var dartService = new DartService(service);
                 var file = new ServiceFile()
                 {
-                    FileName = $"{service.GetKebabName()}.service.ts",
-                    Content = GenerateContent(typescriptService)
+                    FileName = $"{service.GetSnakeName()}.service.dart",
+                    Content = GenerateContent(dartService)
                 };
 
                 list.Add(file);
@@ -32,47 +29,41 @@ namespace swaggerParser.Output.Typescript
             }
             return list;
         }
-
-        private string GenerateContent(TypescriptService service)
+        private string GenerateContent(DartService service)
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine("import { HttpClient, HttpHeaders } from '@angular/common/http';");
-            sb.AppendLine("import { Injectable, Inject } from '@angular/core';");
-            sb.AppendLine("import { Observable } from 'rxjs';");
-            sb.AppendLine("import { APP_BASE_HREF } from '@angular/common';");
+            sb.AppendLine("import '../../shared/services/base_service.dart';");
             //sb.AppendLine("");
             //sb.AppendLine("import { map } from \"rxjs/operators\";");
-            sb.AppendLine("");
-            sb.AppendLine(GetTypescriptAllReferenceTypes(service));
-            sb.AppendLine("");
-            sb.AppendLine("@Injectable({ providedIn: \"root\" })");
-            sb.AppendLine($"export class {service.Name}Service");
+            sb.AppendLine(GetAllReferenceTypes(service));
+            sb.AppendLine($"class {service.Name}Service");
             sb.AppendLine("{");
-            sb.AppendLine($"\tprivate apiUrl:string = this.baseHref + '/{service.Url}';");
+            sb.AppendLine($"  final String _apiUrl = '/{service.Url}';");
             sb.AppendLine("");
-            sb.AppendLine("\tprivate headers = new HttpHeaders({");
-            sb.AppendLine("\t\t\"content-type\": \"application/json\",");
-            sb.AppendLine("\t\t\"Accept\": \"application/json\"");
-            sb.AppendLine("\t});");
-
-            sb.AppendLine("\tprivate options = {");
-            sb.AppendLine("\t\theaders : this.headers");
-            sb.AppendLine("\t};");
+            sb.AppendLine($"  BaseService baseService;");
             sb.AppendLine("");
-            sb.AppendLine("\tconstructor(private http: HttpClient,");
-            sb.AppendLine("\t@Inject(APP_BASE_HREF) private baseHref : string");
-            sb.AppendLine("\t) {}");
+            sb.AppendLine($"  {service.Name}Service() {{");
+            sb.AppendLine($"  baseService = BaseService();");
+            sb.AppendLine($"  }}");
             sb.AppendLine("");
-
             foreach (var action in service.Actions)
             {
                 var methodName = GetMethodName(service.Actions, action);
+                var dartAction = action as DartAction;
+                if (dartAction.DartOutputParameterType == null)
+                {
+                    sb.AppendLine($"  Future<dynamic> {methodName}({dartAction.DartInputParameters}) async {{");
+                    sb.AppendLine($"    return baseService.{dartAction.DartMethod}({dartAction.CollectUri(service.UrlChunks)}{dartAction.DartRequestBody}).then((res) => res.data);");
+                } else
+                {
+                    var parse = GetParseJsonByType(dartAction.DartOutputParameterType);
+                    var parameterType = dartAction.DartOutputParameterType.GetDartType();
+                    sb.AppendLine($"  Future<{parameterType}> {methodName}({dartAction.DartInputParameters}) async {{");
+                    sb.AppendLine($"    return baseService.{dartAction.DartMethod}({dartAction.CollectUri(service.UrlChunks)}{dartAction.DartRequestBody}).then((res) => {parse});");
 
-                var typescriptAction = action as TypescriptAction;
-                sb.AppendLine($"\t{methodName}({typescriptAction.TypescriptInputParameters}) : Observable<{typescriptAction.TypescriptOutputParameter}> {{");
-                sb.AppendLine($"\t\treturn this.http.{typescriptAction.TypescriptMethod}<{typescriptAction.TypescriptOutputParameter}>({typescriptAction.CollectUri(service.UrlChunks)}{typescriptAction.AngularRequestBody}, this.options).pipe();");
-                sb.AppendLine("\t}");
+                }
+                sb.AppendLine("  }");
                 sb.AppendLine("");
             }
             sb.AppendLine("}");
@@ -80,13 +71,52 @@ namespace swaggerParser.Output.Typescript
             return sb.ToString();
         }
 
+        private string GetParseJsonByType(BaseType outputType)
+        {
+            if (outputType.Type == ClassTypeEnum.DateTime)
+            {
+                return $"DateTime.parse(res.data as String);";
+            }
+            else if (outputType.Type == ClassTypeEnum.Array)
+            {
+                if (outputType.InnerClass != null)
+                {
+                    return $"{outputType.InnerClass.GetDartName()}.listFromJson(res.data)";
+                }
+                else
+                {
+                    return $"{outputType.GetDartName()}.fromJson(res.data)";
+                }
+                //if (outputType.InnerClass.Type == ClassTypeEnum.String)
+                //{
+                //    return $"(res.data as List).map((item) => item as String).toList();";
+                //}
+                //else if (outputType.InnerClass.Type == ClassTypeEnum.Integer)
+                //{
+                //    return $"(res.data as List).map((item) => item as int).toList();";
+                //}
+                //else
+                //{
+                //    
+                //}
+            }
+            else if (outputType.Type == ClassTypeEnum.Object)
+            {
+                return $"{outputType.GetDartName()}.fromJson(res.data);";
+            }
+            else
+            {
+                return $"res.data";
+            }
+        }
+
         private string GetMethodName(IEnumerable<BaseAction> list, BaseAction current)
         {
-            var currentTypescriptAction = current as TypescriptAction;
+            var currentDartAction = current as DartAction;
             var count = list.Count(p => p.Method == current.Method);
             if (count == 1)
             {
-                return currentTypescriptAction.TypescriptMethod;
+                return currentDartAction.DartMethod;
             }
             if (count == 2 && current.Method == MethodTypeEnum.Get)
             {
@@ -101,10 +131,10 @@ namespace swaggerParser.Output.Typescript
                     return "get";
                 }
             }
-            return currentTypescriptAction.TypescriptMethod;
+            return currentDartAction.DartMethod;
         }
 
-        private string GetTypescriptAllReferenceTypes(BaseService service)
+        private string GetAllReferenceTypes(BaseService service)
         {
             var referenceTypes = CollectAllReferenceTypes(service);
             var sb = new StringBuilder();
@@ -117,11 +147,11 @@ namespace swaggerParser.Output.Typescript
             {
                 if (referenceType is BaseClass)
                 {
-                    sb.AppendLine($"import {{ {referenceType.GetTypescriptName()} }} from '../classes/{referenceType.GetKebabName()}.class';");
+                    sb.AppendLine($"import '../classes/{referenceType.GetSnakeName()}.class.dart';");
                 }
                 if (referenceType is BaseEnum)
                 {
-                    sb.AppendLine($"import {{ {referenceType.GetTypescriptName()} }} from '../enums/{referenceType.GetKebabName()}.enum';");
+                    sb.AppendLine($"import '../enums/{referenceType.GetSnakeName()}.enum.dart';");
                 }
             }
             return sb.ToString();

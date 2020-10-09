@@ -45,6 +45,19 @@ namespace swaggerParser.Output.Dart
         {
             var sb = new StringBuilder();
 
+            if (@enum.Types.Count > 0)
+            {
+                sb.AppendLine(GenerateEnum(@enum));
+                sb.AppendLine(GenerateValueOfEnum(@enum));
+            }
+            return sb.ToString();
+        }
+
+      
+
+        private string GenerateEnum(BaseEnum @enum)
+        {
+            var sb = new StringBuilder();
             sb.AppendLine($"enum {@enum.Name} {{");
             foreach (var type in @enum.Types)
             {
@@ -67,6 +80,45 @@ namespace swaggerParser.Output.Dart
             }
             sb.AppendLine($"}}");
             return sb.ToString();
+        }
+
+        private string GenerateValueOfEnum(BaseEnum @enum)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"{@enum.Name} {@enum.Name}ValueOf(int value)  {{");
+            sb.AppendLine($"  switch (value) {{");
+
+            var firstType = @enum.Types[0];
+            foreach (var type in @enum.Types)
+            {
+                if (type is int || type is long)
+                {
+                    int.TryParse(type.ToString(), out int result);
+                    sb.AppendLine($"    case {result}:");
+                    if (result < 0)
+                    {
+                        sb.AppendLine($"        return {@enum.Name}.number_minus_{-result};");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"        return {@enum.Name}.number_{result};");
+                    }
+                }
+            }
+            sb.AppendLine("  }");
+            int.TryParse(firstType.ToString(), out int firstResult);
+            if (firstResult < 0)
+            {
+                sb.AppendLine($"  return {@enum.Name}.number_minus_{-firstResult};");
+            }
+            else
+            {
+                sb.AppendLine($"  return {@enum.Name}.number_{firstResult};");
+            }
+            sb.AppendLine($"}}");
+
+            return sb.ToString();
+            throw new NotImplementedException();
         }
 
         private string GenerateContentClass(BaseClass @class)
@@ -100,12 +152,6 @@ namespace swaggerParser.Output.Dart
         {
             var sb = new StringBuilder();
             sb.AppendLine($"  {@class.GetDartName()}();");
-            //sb.AppendLine($"  {@class.GetDartName()}() {{");
-            //foreach (var type in @class.Properties)
-            //{
-            //    sb.AppendLine($"    {type.Name.AvoidKeywords()} = {type.Type.GetDefaultValue()};");
-            //}
-            //sb.AppendLine("  }");
             return sb.ToString();
         }
         private string GenerateToString(BaseClass @class)
@@ -124,32 +170,46 @@ namespace swaggerParser.Output.Dart
             sb.AppendLine($"    if (json == null) return;");
             foreach (var property in @class.Properties)
             {
-                if (property.Type.Type == Enums.ClassTypeEnum.DateTime)
-                {
-                    sb.AppendLine($"    {property.Name.AvoidKeywords()} =  DateTime.parse(json['{property.Name.AvoidKeywords()}'] as String);");
-                }
-                else if (property.Type.Type == Enums.ClassTypeEnum.Array)
-                {
-                    if (property.Type.InnerClass.Type == Enums.ClassTypeEnum.String)
-                    {
-                        sb.AppendLine($"    {property.Name.AvoidKeywords()} = (json['{property.Name.AvoidKeywords()}'] as List).map((item) => item as String).toList();");
-                    }
-                    else
-                    {
-                        sb.AppendLine($"    {property.Name.AvoidKeywords()} = {property.Type.InnerClass.GetDartName()}.listFromJson(json['{property.Name.AvoidKeywords()}']);");
-                    }
-                } 
-                else if (property.Type.Type == Enums.ClassTypeEnum.Object)
-                {
-                    sb.AppendLine($"    {property.Name.AvoidKeywords()} = {property.Type.GetDartName()}.fromJson(json['{property.Name.AvoidKeywords()}']);");
-                }
-                else
-                {
-                    sb.AppendLine($"    {property.Name.AvoidKeywords()} = json['{property.Name.AvoidKeywords()}'];");
-                }
+                sb.AppendLine(ParseProperty(property));
             }
             sb.AppendLine($"  }}");
             return sb.ToString();
+        }
+
+        private string ParseProperty(BaseProperty property)
+        {
+            if (property.Type is BaseEnum)
+            {
+                var @enum = property.Type as BaseEnum;
+                return $"    {property.Name.AvoidKeywords()} = {@enum.GetDartName()}ValueOf(json['{property.Name.AvoidKeywords()}']);";
+            } else 
+            if (property.Type.Type == Enums.ClassTypeEnum.DateTime)
+            {
+               return $"    {property.Name.AvoidKeywords()} = DateTime.parse(json['{property.Name.AvoidKeywords()}'] as String);";
+            }
+            else if (property.Type.Type == Enums.ClassTypeEnum.Array)
+            {
+                if (property.Type.InnerClass.Type == Enums.ClassTypeEnum.String)
+                {
+                    return $"    {property.Name.AvoidKeywords()} = (json['{property.Name.AvoidKeywords()}'] as List).map((item) => item as String).toList();";
+                }
+                else if (property.Type.InnerClass.Type == Enums.ClassTypeEnum.Integer)
+                {
+                    return $"    {property.Name.AvoidKeywords()} = (json['{property.Name.AvoidKeywords()}'] as List).map((item) => item as int).toList();";
+                }
+                else
+                {
+                    return $"    {property.Name.AvoidKeywords()} = {property.Type.InnerClass.GetDartName()}.listFromJson(json['{property.Name.AvoidKeywords()}']);";
+                }
+            }
+            else if (property.Type.Type == Enums.ClassTypeEnum.Object)
+            {
+                return $"    {property.Name.AvoidKeywords()} = {property.Type.GetDartName()}.fromJson(json['{property.Name.AvoidKeywords()}']);";
+            }
+            else
+            {
+                return $"    {property.Name.AvoidKeywords()} = json['{property.Name.AvoidKeywords()}'];";
+            }
         }
 
         private string GenerateToJson(BaseClass @class)
