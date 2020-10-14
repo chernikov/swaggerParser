@@ -37,7 +37,6 @@ namespace swaggerParserApp
             IGenerator generator = new Generator(text, typeWriter, serviceWriter);
             generator.Parse();
             generator.WriteFiles();
-            Console.ReadLine();
         }
     }
 }
