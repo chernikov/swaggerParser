@@ -34,8 +34,8 @@ namespace swaggerParser.Output.Dart
             var sb = new StringBuilder();
 
             sb.AppendLine("import '../../shared/services/base_service.dart';");
-            //sb.AppendLine("");
-            //sb.AppendLine("import { map } from \"rxjs/operators\";");
+            sb.AppendLine("import '../../shared/types/api_result.dart';");
+
             sb.AppendLine(GetAllReferenceTypes(service));
             sb.AppendLine($"class {service.Name}Service");
             sb.AppendLine("{");
@@ -54,13 +54,13 @@ namespace swaggerParser.Output.Dart
                 if (dartAction.DartOutputParameterType == null)
                 {
                     sb.AppendLine($"  Future<dynamic> {methodName}({dartAction.DartInputParameters}) async {{");
-                    sb.AppendLine($"    return baseService.{dartAction.DartMethod}({dartAction.CollectUri(service.UrlChunks)}{dartAction.DartRequestBody}).then((res) => res.data);");
+                    sb.AppendLine($"    return baseService.{dartAction.DartMethod}({dartAction.CollectUri(service.UrlChunks)}{dartAction.DartRequestBody}).then((res) => res);");
                 } else
                 {
                     var parse = GetParseJsonByType(dartAction.DartOutputParameterType);
                     var parameterType = dartAction.DartOutputParameterType.GetDartType();
-                    sb.AppendLine($"  Future<{parameterType}> {methodName}({dartAction.DartInputParameters}) async {{");
-                    sb.AppendLine($"    return baseService.{dartAction.DartMethod}({dartAction.CollectUri(service.UrlChunks)}{dartAction.DartRequestBody}).then((res) => {parse});");
+                    sb.AppendLine($"  Future<ApiResult<{parameterType}>> {methodName}({dartAction.DartInputParameters}) async {{");
+                    sb.AppendLine($"    return baseService.{dartAction.DartMethod}({dartAction.CollectUri(service.UrlChunks)}{dartAction.DartRequestBody}).then((res) => ApiResult(res.errors, {parse}));");
 
                 }
                 sb.AppendLine("  }");

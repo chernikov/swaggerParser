@@ -102,6 +102,39 @@ namespace swaggerParser.Output.Dart
             }
         }
 
+        public static string GetDefaultValueOnlyValued(this BaseType @class)
+        {
+            if (@class.Name != null)
+            {
+                return null;
+            }
+            if (@class.IsDictionary)
+            {
+                return null;
+            }
+            switch (@class.Type)
+            {
+                case ClassTypeEnum.Array:
+                    return null;
+                case ClassTypeEnum.Object:
+                    return null;
+                case ClassTypeEnum.Boolean:
+                    return "false";
+                case ClassTypeEnum.Byte:
+                case ClassTypeEnum.Integer:
+                case ClassTypeEnum.Float:
+                case ClassTypeEnum.Double:
+                case ClassTypeEnum.Long:
+                    return "0";
+                case ClassTypeEnum.String:
+                    return null;
+                case ClassTypeEnum.DateTime:
+                    return null;
+                default:
+                    return null;
+            }
+        }
+
         public static string AvoidKeywords(this string str)
         {
             if (DartKeywords.Contains(str))

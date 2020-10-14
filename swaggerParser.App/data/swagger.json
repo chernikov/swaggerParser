@@ -5326,6 +5326,15 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 3
+            }
           }
         ],
         "responses": {
@@ -8185,6 +8194,16 @@
         },
         "additionalProperties": false
       },
+      "OrganizationRoleEnum": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "OrganizationDto": {
         "type": "object",
         "properties": {
@@ -8199,6 +8218,9 @@
           "photoUrl": {
             "type": "string",
             "nullable": true
+          },
+          "currentRole": {
+            "$ref": "#/components/schemas/OrganizationRoleEnum"
           }
         },
         "additionalProperties": false
@@ -9018,6 +9040,10 @@
           "totalProgress": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalUserCount": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -9202,16 +9228,6 @@
           }
         },
         "additionalProperties": false
-      },
-      "OrganizationRoleEnum": {
-        "enum": [
-          0,
-          1,
-          2,
-          3
-        ],
-        "type": "integer",
-        "format": "int32"
       },
       "InviteDto": {
         "type": "object",
