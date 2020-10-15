@@ -139,7 +139,7 @@ namespace swaggerParser.Output.Dart
         {
             if (DartKeywords.Contains(str))
             {
-                return $"_{str}";
+                return $"{str}_";
             }
             return str;
         }
