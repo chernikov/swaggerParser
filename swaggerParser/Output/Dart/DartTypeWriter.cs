@@ -49,11 +49,12 @@ namespace swaggerParser.Output.Dart
             {
                 sb.AppendLine(GenerateEnum(@enum));
                 sb.AppendLine(GenerateValueOfEnum(@enum));
+                sb.AppendLine(GenerateEnumOfValue(@enum));
             }
             return sb.ToString();
         }
 
-      
+
 
         private string GenerateEnum(BaseEnum @enum)
         {
@@ -118,7 +119,37 @@ namespace swaggerParser.Output.Dart
             sb.AppendLine($"}}");
 
             return sb.ToString();
-            throw new NotImplementedException();
+        }
+
+        private string GenerateEnumOfValue(BaseEnum @enum)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"int {@enum.Name}Value({@enum.Name} value)  {{");
+            sb.AppendLine($"  switch (value) {{");
+
+            var firstType = @enum.Types[0];
+            foreach (var type in @enum.Types)
+            {
+                if (type is int || type is long)
+                {
+                    int.TryParse(type.ToString(), out int result);
+                    if (result < 0)
+                    {
+                        sb.AppendLine($"    case {@enum.Name}.number_{result}:");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"    case {@enum.Name}.number_{result}:");
+                    }
+                    sb.AppendLine($"        return {result};");
+                }
+            }
+            sb.AppendLine("  }");
+            int.TryParse(firstType.ToString(), out int firstResult);
+            sb.AppendLine($"  return {firstResult};");
+            sb.AppendLine($"}}");
+
+            return sb.ToString();
         }
 
         private string GenerateContentClass(BaseClass @class)
@@ -183,10 +214,11 @@ namespace swaggerParser.Output.Dart
             {
                 var @enum = property.Type as BaseEnum;
                 return $"    {property.Name.AvoidKeywords()} = {@enum.GetDartName()}ValueOf(json['{property.Name}']);";
-            } else 
+            }
+            else
             if (property.Type.Type == Enums.ClassTypeEnum.DateTime)
             {
-               return $"    {property.Name.AvoidKeywords()} = DateTime.parse(json['{property.Name}'] as String);";
+                return $"    {property.Name.AvoidKeywords()} = DateTime.parse(json['{property.Name}'] as String);";
             }
             else if (property.Type.Type == Enums.ClassTypeEnum.Array)
             {
@@ -217,12 +249,28 @@ namespace swaggerParser.Output.Dart
         {
             var sb = new StringBuilder();
             sb.AppendLine($"  Map<String, dynamic> toJson() {{");
-            var json = string.Join(",\r\n", @class.Properties.Select(property => $"      '{property.Name}': {property.Name.AvoidKeywords()}"));
             sb.AppendLine($"    return {{");
-            sb.AppendLine(json);
+            foreach (var property in @class.Properties)
+            {
+                sb.AppendLine(ParseJsonProperty(property));
+            }
             sb.AppendLine($"    }};");
             sb.AppendLine($"  }}");
             return sb.ToString();
+        }
+
+
+        private string ParseJsonProperty(BaseProperty property)
+        {
+            if (property.Type is BaseEnum)
+            {
+                var @enum = property.Type as BaseEnum;
+                return $"    '{property.Name}' : {@enum.GetDartName()}Value({property.Name.AvoidKeywords()}),";
+            }
+            else
+            {
+                return $"    '{property.Name}' : {property.Name.AvoidKeywords()},";
+            }
         }
 
         private string GenerateListFromJson(BaseClass @class)
@@ -239,7 +287,7 @@ namespace swaggerParser.Output.Dart
         private string GenerateMapFromJson(BaseClass @class)
         {
             var sb = new StringBuilder();
-            
+
             sb.AppendLine($"  static Map<String, {@class.GetDartName()}> mapFromJson(");
             sb.AppendLine($"      Map<String, Map<String, dynamic>> json) {{");
             sb.AppendLine($"    var map = <String, {@class.GetDartName()}>{{}};");
