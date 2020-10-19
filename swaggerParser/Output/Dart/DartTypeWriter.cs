@@ -54,7 +54,7 @@ namespace swaggerParser.Output.Dart
             return sb.ToString();
         }
 
-      
+
 
         private string GenerateEnum(BaseEnum @enum)
         {
@@ -214,30 +214,30 @@ namespace swaggerParser.Output.Dart
             {
                 var @enum = property.Type as BaseEnum;
                 return $"    {property.Name.AvoidKeywords()} = {@enum.GetDartName()}ValueOf(json['{property.Name}']);";
-            } else 
+            }
+            else
             if (property.Type.Type == Enums.ClassTypeEnum.DateTime)
             {
-                
-               return $"    {property.Name.AvoidKeywords()} = json['{property.Name}'] != 'null' ? DateTime.parse(json['{property.Name}'] as String) : null;";
+                return $"    {property.Name.AvoidKeywords()} = DateTime.parse(json['{property.Name}'] as String);";
             }
             else if (property.Type.Type == Enums.ClassTypeEnum.Array)
             {
                 if (property.Type.InnerClass.Type == Enums.ClassTypeEnum.String)
                 {
-                    return $"    {property.Name.AvoidKeywords()} = jsonDecode(json['{property.Name}']) != null ? (jsonDecode(json['{property.Name.AvoidKeywords()}']) as List).map((item) => item as String).toList()  : null;";
+                    return $"    {property.Name.AvoidKeywords()} = json['{property.Name}'] != null ? (json['{property.Name.AvoidKeywords()}'] as List).map((item) => item as String).toList() : [];";
                 }
                 else if (property.Type.InnerClass.Type == Enums.ClassTypeEnum.Integer)
                 {
-                    return $"    {property.Name.AvoidKeywords()} = jsonDecode(json['{property.Name}']) != null ? (jsonDecode(json['{property.Name.AvoidKeywords()}']) as List).map((item) => item as int).toList() : null;";
+                    return $"    {property.Name.AvoidKeywords()} = json['{property.Name}'] != null ? (json['{property.Name.AvoidKeywords()}'] as List).map((item) => item as int).toList() : [];";
                 }
                 else
                 {
-                    return $"    {property.Name.AvoidKeywords()} = {property.Type.InnerClass.GetDartName()}.listFromJson(jsonDecode(json['{property.Name}']));";
+                    return $"    {property.Name.AvoidKeywords()} = {property.Type.InnerClass.GetDartName()}.listFromJson(json['{property.Name}']);";
                 }
             }
             else if (property.Type.Type == Enums.ClassTypeEnum.Object)
             {
-                return $"    {property.Name.AvoidKeywords()} = json['{property.Name}'] != null ? {property.Type.GetDartName()}.fromJson(json['{property.Name}']) : null;";
+                return $"    {property.Name.AvoidKeywords()} = {property.Type.GetDartName()}.fromJson(json['{property.Name}']);";
             }
             else
             {
@@ -245,7 +245,6 @@ namespace swaggerParser.Output.Dart
             }
         }
 
-      
         private string GenerateToJson(BaseClass @class)
         {
             var sb = new StringBuilder();
@@ -269,42 +268,17 @@ namespace swaggerParser.Output.Dart
                 return $"    '{property.Name}' : {@enum.GetDartName()}Value({property.Name.AvoidKeywords()}),";
             }
             else
-            if (property.Type.Type == Enums.ClassTypeEnum.DateTime)
-            {
-                return $"    '{property.Name}' : {property.Name.AvoidKeywords()}.toString(),";
-            }
-            else if (property.Type.Type == Enums.ClassTypeEnum.Array)
-            {
-                if (property.Type.InnerClass.Type == Enums.ClassTypeEnum.String)
-                {
-                    return $"    '{property.Name}' : jsonEncode({property.Name.AvoidKeywords()}),";
-                }
-                else if (property.Type.InnerClass.Type == Enums.ClassTypeEnum.Integer)
-                {
-                    return $"    '{property.Name}' : jsonEncode({property.Name.AvoidKeywords()}),";
-                }
-                else
-                {
-                    return $"    '{property.Name}' : jsonEncode({property.Name.AvoidKeywords()}),";
-                }
-            }
-            else if (property.Type.Type == Enums.ClassTypeEnum.Object)
-            {
-                return $"    '{property.Name}' : {property.Name.AvoidKeywords()} != null ? {property.Name.AvoidKeywords()}.toJson() : null,";
-            }
-            else
             {
                 return $"    '{property.Name}' : {property.Name.AvoidKeywords()},";
             }
         }
-
 
         private string GenerateListFromJson(BaseClass @class)
         {
             var sb = new StringBuilder();
             sb.AppendLine($"  static List<{@class.GetDartName()}> listFromJson(List<dynamic> json) {{");
             sb.AppendLine($"    return json == null");
-            sb.AppendLine($"        ? null");
+            sb.AppendLine($"        ? <{@class.GetDartName()}>[]");
             sb.AppendLine($"        : json.map((value) => {@class.GetDartName()}.fromJson(value)).toList();");
             sb.AppendLine($"  }}");
             return sb.ToString();
@@ -313,7 +287,7 @@ namespace swaggerParser.Output.Dart
         private string GenerateMapFromJson(BaseClass @class)
         {
             var sb = new StringBuilder();
-            
+
             sb.AppendLine($"  static Map<String, {@class.GetDartName()}> mapFromJson(");
             sb.AppendLine($"      Map<String, Map<String, dynamic>> json) {{");
             sb.AppendLine($"    var map = <String, {@class.GetDartName()}>{{}};");
@@ -331,7 +305,6 @@ namespace swaggerParser.Output.Dart
         {
             var referenceTypes = CollectAllReferenceTypes(@class);
             var sb = new StringBuilder();
-            sb.AppendLine("import 'dart:convert';");
 
             foreach (var referenceType in referenceTypes)
             {
