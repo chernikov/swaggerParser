@@ -8849,6 +8849,13 @@
       "TestWithRelationsDto": {
         "type": "object",
         "properties": {
+          "testSets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestSetDto"
+            },
+            "nullable": true
+          },
           "id": {
             "type": "integer",
             "format": "int32"
@@ -8889,13 +8896,6 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TestPairDto"
-            },
-            "nullable": true
-          },
-          "testSets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TestSetDto"
             },
             "nullable": true
           }

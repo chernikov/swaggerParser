@@ -218,7 +218,7 @@ namespace swaggerParser.Output.Dart
             else
             if (property.Type.Type == Enums.ClassTypeEnum.DateTime)
             {
-                return $"    {property.Name.AvoidKeywords()} = DateTime.parse(json['{property.Name}'] as String);";
+                return $"    {property.Name.AvoidKeywords()} = json['{property.Name}'] != null ? DateTime.parse(json['{property.Name}'] as String) : null;";
             }
             else if (property.Type.Type == Enums.ClassTypeEnum.Array)
             {
@@ -266,6 +266,10 @@ namespace swaggerParser.Output.Dart
             {
                 var @enum = property.Type as BaseEnum;
                 return $"    '{property.Name}' : {@enum.GetDartName()}Value({property.Name.AvoidKeywords()}),";
+            }
+            if (property.Type.Type == Enums.ClassTypeEnum.DateTime)
+            {
+                return $"    '{property.Name}' : {property.Name.AvoidKeywords()} != null ? {property.Name.AvoidKeywords()}.toString() : null,";
             }
             else
             {
